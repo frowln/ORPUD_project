@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ model.name }} - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-brain me-2"></i>
+        {{ model.name }}
+    </h1>
+    <div>
+        <a href="{% url 'ml_models:model_train' model.pk %}" class="btn btn-success me-2">
+            <i class="fas fa-play me-2"></i>
+            Обучить
+        </a>
+        <a href="{% url 'ml_models:model_predict' model.pk %}" class="btn btn-info me-2">
+            <i class="fas fa-chart-line me-2"></i>
+            Прогноз
+        </a>
+        <a href="{% url 'ml_models:model_update' model.pk %}" class="btn btn-warning me-2">
+            <i class="fas fa-edit me-2"></i>
+            Редактировать
+        </a>
+        <a href="{% url 'ml_models:model_delete' model.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>
+            Удалить
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Информация о модели -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Информация о модели
+                </h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">ID:</td>
+                        <td>{{ model.id }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Название:</td>
+                        <td>{{ model.name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Тип модели:</td>
+                        <td>
+                            <span class="badge bg-info">{{ model.get_model_type_display }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Алгоритм:</td>
+                        <td>{{ model.algorithm }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Статус:</td>
+                        <td>
+                            <span class="badge bg-{% if model.is_active %}success{% else %}danger{% endif %}">
+                                {% if model.is_active %}Активна{% else %}Неактивна{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Дата создания:</td>
+                        <td>{{ model.created_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Создатель:</td>
+                        <td>{{ model.created_by.username }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Метрики модели -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Метрики модели
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12">
+                        <h4 class="text-primary">{{ accuracy_percent|floatformat:1 }}%</h4>
+                        <p class="text-muted mb-0">Точность</p>
+                    </div>
+                </div>
+                
+                {% if accuracy_percent %}
+                    <hr>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Модель обучена!</strong> Точность: {{ accuracy_percent|floatformat:1 }}%
+                    </div>
+                {% else %}
+                    <hr>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Модель не обучена!</strong> Необходимо провести обучение перед использованием.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Описание модели -->
+{% if model.description %}
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-align-left me-2"></i>
+            Описание
+        </h6>
+    </div>
+    <div class="card-body">
+        <p class="mb-0">{{ model.description }}</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- История обучения -->
+<div class="card shadow">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-history me-2"></i>
+            История обучения
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if training_history %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Дата обучения</th>
+                            <th>Точность</th>
+                            <th>Размер датасета</th>
+                            <th>Время обучения</th>
+                            <th>Алгоритм</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for training in training_history %}
+                        <tr>
+                            <td>{{ training.training_date|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                <span class="badge bg-{% if training.accuracy > 0.8 %}success{% elif training.accuracy > 0.6 %}warning{% else %}danger{% endif %}">
+                                    {{ training.accuracy|floatformat:1 }}%
+                                </span>
+                            </td>
+                            <td>{{ training.dataset_size }} записей</td>
+                            <td>{{ training.training_time|floatformat:1 }} сек</td>
+                            <td>{{ training.parameters.algorithm|default:"Не указан" }}</td>
+                            <td>
+                                <span class="badge bg-success">Завершено</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">История обучения пуста</h5>
+                <p class="text-muted">Модель еще не проходила обучение.</p>
+                <a href="{% url 'ml_models:model_train' model.pk %}" class="btn btn-success">
+                    <i class="fas fa-play me-2"></i>
+                    Обучить модель
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'ml_models:model_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        Назад к списку моделей
+    </a>
+</div>
+{% endblock %} 

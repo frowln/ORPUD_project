@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ customer.full_name }} - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-user me-2"></i>
+        {{ customer.full_name }}
+    </h1>
+    <div>
+        <a href="{% url 'analytics:customer_update' customer.pk %}" class="btn btn-warning me-2">
+            <i class="fas fa-edit me-2"></i>
+            Редактировать
+        </a>
+        <a href="{% url 'analytics:customer_delete' customer.pk %}" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>
+            Удалить
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Информация о клиенте -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Информация о клиенте
+                </h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">ID:</td>
+                        <td>{{ customer.id }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Имя:</td>
+                        <td>{{ customer.first_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Фамилия:</td>
+                        <td>{{ customer.last_name }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Email:</td>
+                        <td>
+                            <a href="mailto:{{ customer.email }}">{{ customer.email }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Телефон:</td>
+                        <td>
+                            {% if customer.phone %}
+                                <a href="tel:{{ customer.phone }}">{{ customer.phone }}</a>
+                            {% else %}
+                                <span class="text-muted">Не указан</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Пол:</td>
+                        <td>{{ customer.get_gender_display|default:"Не указан" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Дата рождения:</td>
+                        <td>{{ customer.birth_date|date:"d.m.Y"|default:"Не указана" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Регион:</td>
+                        <td>{{ customer.region.name|default:"Не указан" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Адрес:</td>
+                        <td>{{ customer.address|default:"Не указан" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Дата регистрации:</td>
+                        <td>{{ customer.registration_date|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Статус:</td>
+                        <td>
+                            <span class="badge bg-{% if customer.is_active %}success{% else %}danger{% endif %}">
+                                {% if customer.is_active %}Активен{% else %}Неактивен{% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика клиента -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Статистика клиента
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-primary">{{ orders.count }}</h4>
+                            <p class="text-muted mb-0">Заказов</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">{{ total_spent|floatformat:0 }} ₽</h4>
+                        <p class="text-muted mb-0">Общая сумма</p>
+                    </div>
+                </div>
+                
+                {% if orders %}
+                    <hr>
+                    <h6>Средний чек:</h6>
+                    <h5 class="text-info">
+                        {% if total_spent %}
+                            {% widthratio total_spent orders.count 1 %} ₽
+                        {% else %}
+                            0 ₽
+                        {% endif %}
+                    </h5>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- История заказов -->
+<div class="card shadow">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-shopping-cart me-2"></i>
+            История заказов
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if orders %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Номер заказа</th>
+                            <th>Дата</th>
+                            <th>Статус</th>
+                            <th>Сумма</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'analytics:order_detail' order.pk %}" class="text-decoration-none">
+                                    {{ order.order_number }}
+                                </a>
+                            </td>
+                            <td>{{ order.order_date|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                <span class="badge bg-{% if order.status == 'delivered' %}success{% elif order.status == 'processing' %}warning{% elif order.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ order.total_amount }} ₽</td>
+                            <td>
+                                <a href="{% url 'analytics:order_detail' order.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Заказов нет</h5>
+                <p class="text-muted">У этого клиента пока нет заказов.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'analytics:customer_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        Назад к списку клиентов
+    </a>
+</div>
+{% endblock %} 

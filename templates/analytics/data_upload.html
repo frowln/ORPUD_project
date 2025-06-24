@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Загрузка данных - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-upload me-2"></i>
+        Загрузка данных
+    </h1>
+    <a href="{% url 'analytics:data_upload_list' %}" class="btn btn-secondary">
+        <i class="fas fa-list me-2"></i>
+        Список загрузок
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-file-upload me-2"></i>
+                    Загрузить файл данных
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.name|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.file_type|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            {{ form.file|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'analytics:data_upload_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Назад
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>
+                            Загрузить данные
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Информация о поддерживаемых форматах -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Поддерживаемые форматы
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-file-csv text-success me-2"></i>
+                        <strong>CSV</strong> - табличные данные
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-file-excel text-primary me-2"></i>
+                        <strong>Excel</strong> (.xlsx, .xls)
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-file-alt text-warning me-2"></i>
+                        <strong>JSON</strong> - структурированные данные
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-file-code text-info me-2"></i>
+                        <strong>XML</strong> - структурированные данные
+                    </li>
+                </ul>
+                <hr>
+                <p class="text-muted small mb-0">
+                    <strong>Максимальный размер файла:</strong> 10 MB
+                </p>
+            </div>
+        </div>
+        
+        <!-- Рекомендации -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Рекомендации
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Используйте заголовки столбцов
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Убедитесь в корректности данных
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Удалите дубликаты перед загрузкой
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Проверьте кодировку файла (UTF-8)
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Последние загрузки -->
+<div class="card shadow mt-4">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-history me-2"></i>
+            Последние загрузки
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if recent_uploads %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Название</th>
+                            <th>Тип данных</th>
+                            <th>Размер</th>
+                            <th>Дата загрузки</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for upload in recent_uploads %}
+                        <tr>
+                            <td>{{ upload.name }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ upload.get_data_type_display }}</span>
+                            </td>
+                            <td>{{ upload.file.size|filesizeformat }}</td>
+                            <td>{{ upload.upload_date|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                <span class="badge bg-{% if upload.is_processed %}success{% else %}warning{% endif %}">
+                                    {% if upload.is_processed %}Обработан{% else %}В обработке{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-upload fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Загрузки отсутствуют</h5>
+                <p class="text-muted">Загрузите первый файл данных для начала работы.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

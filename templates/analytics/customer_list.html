@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Клиенты - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-users me-2"></i>
+        Клиенты
+    </h1>
+    <a href="{% url 'analytics:customer_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>
+        Добавить клиента
+    </a>
+</div>
+
+<!-- Фильтры и поиск -->
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-search me-2"></i>
+            Поиск и фильтры
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Поиск</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ request.GET.search }}" placeholder="Имя, фамилия или email">
+            </div>
+            <div class="col-md-4">
+                <label for="region" class="form-label">Регион</label>
+                <select class="form-select" id="region" name="region">
+                    <option value="">Все регионы</option>
+                    {% for region in regions %}
+                        <option value="{{ region.id }}" {% if request.GET.region == region.id|stringformat:"s" %}selected{% endif %}>
+                            {{ region.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-2"></i>
+                    Найти
+                </button>
+                <a href="{% url 'analytics:customer_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Список клиентов -->
+<div class="card shadow">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-list me-2"></i>
+            Список клиентов ({{ page_obj.paginator.count }})
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if customers %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя</th>
+                            <th>Email</th>
+                            <th>Телефон</th>
+                            <th>Регион</th>
+                            <th>Дата регистрации</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.id }}</td>
+                            <td>
+                                <a href="{% url 'analytics:customer_detail' customer.pk %}" class="text-decoration-none">
+                                    {{ customer.full_name }}
+                                </a>
+                            </td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.phone|default:"-" }}</td>
+                            <td>{{ customer.region.name|default:"-" }}</td>
+                            <td>{{ customer.registration_date|date:"d.m.Y" }}</td>
+                            <td>
+                                <span class="badge bg-{% if customer.is_active %}success{% else %}danger{% endif %}">
+                                    {% if customer.is_active %}Активен{% else %}Неактивен{% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'analytics:customer_detail' customer.pk %}" 
+                                       class="btn btn-sm btn-outline-primary" title="Просмотр">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'analytics:customer_update' customer.pk %}" 
+                                       class="btn btn-sm btn-outline-warning" title="Редактировать">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'analytics:customer_delete' customer.pk %}" 
+                                       class="btn btn-sm btn-outline-danger" title="Удалить">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Пагинация -->
+            {% if is_paginated %}
+            <nav aria-label="Навигация по страницам">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Клиенты не найдены</h5>
+                <p class="text-muted">Попробуйте изменить параметры поиска или добавьте первого клиента.</p>
+                <a href="{% url 'analytics:customer_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Добавить клиента
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

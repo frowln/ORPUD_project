@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Обучение модели {{ model.name }} - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-play me-2"></i>
+        Обучение модели: {{ model.name }}
+    </h1>
+    <a href="{% url 'ml_models:model_detail' model.pk %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        Назад к модели
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-cog me-2"></i>
+                    Параметры обучения
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.dataset|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.test_size|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.random_state|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.max_iterations|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            {{ form.hyperparameters|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Информация:</strong> Процесс обучения может занять несколько минут в зависимости от размера данных и сложности модели.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'ml_models:model_detail' model.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-play me-2"></i>
+                            Начать обучение
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Информация о модели -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Информация о модели
+                </h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">Тип:</td>
+                        <td>{{ model.get_model_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Алгоритм:</td>
+                        <td>{{ model.algorithm }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Текущая точность:</td>
+                        <td>
+                            <span class="badge bg-{% if model.accuracy > 0.8 %}success{% elif model.accuracy > 0.6 %}warning{% else %}danger{% endif %}">
+                                {{ model.accuracy|floatformat:1 }}%
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Дата создания:</td>
+                        <td>{{ model.created_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Доступные датасеты -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-database me-2"></i>
+                    Доступные датасеты
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if available_datasets %}
+                    <div class="list-group list-group-flush">
+                        {% for dataset in available_datasets %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ dataset.name }}</h6>
+                                <small class="text-muted">{{ dataset.rows }} строк, {{ dataset.columns }} столбцов</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ dataset.get_data_type_display }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-database fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">Нет доступных датасетов</p>
+                        <a href="{% url 'analytics:data_upload' %}" class="btn btn-sm btn-primary mt-2">
+                            Загрузить данные
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- История обучения -->
+<div class="card shadow mt-4">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-history me-2"></i>
+            История обучения
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if training_history %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Дата обучения</th>
+                            <th>Датасет</th>
+                            <th>Точность</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                            <th>F1-мера</th>
+                            <th>Время обучения</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for training in training_history %}
+                        <tr>
+                            <td>{{ training.training_date|date:"d.m.Y H:i" }}</td>
+                            <td>{{ training.dataset.name|default:"-" }}</td>
+                            <td>
+                                <span class="badge bg-{% if training.accuracy > 0.8 %}success{% elif training.accuracy > 0.6 %}warning{% else %}danger{% endif %}">
+                                    {{ training.accuracy|floatformat:1 }}%
+                                </span>
+                            </td>
+                            <td>{{ training.precision|floatformat:1 }}%</td>
+                            <td>{{ training.recall|floatformat:1 }}%</td>
+                            <td>{{ training.f1_score|floatformat:1 }}%</td>
+                            <td>{{ training.training_time|floatformat:1 }} сек</td>
+                            <td>
+                                <span class="badge bg-success">Завершено</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">История обучения пуста</h5>
+                <p class="text-muted">Модель еще не проходила обучение.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

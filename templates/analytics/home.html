@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <h1 class="display-4 text-primary mb-4">
+                        <i class="fas fa-chart-line me-3"></i>
+                        Аналитическая платформа
+                    </h1>
+                    
+                    <p class="lead text-muted mb-4">
+                        Мощная веб-платформа для анализа данных, машинного обучения и бизнес-аналитики
+                    </p>
+                    
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-chart-bar fa-3x text-primary mb-3"></i>
+                                <h5>Аналитика данных</h5>
+                                <p class="text-muted">Интерактивные графики и отчеты</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-brain fa-3x text-success mb-3"></i>
+                                <h5>Машинное обучение</h5>
+                                <p class="text-muted">Предиктивная аналитика и модели ML</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-users fa-3x text-info mb-3"></i>
+                                <h5>Управление данными</h5>
+                                <p class="text-muted">CRUD операции и загрузка файлов</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if user.is_authenticated %}
+                        <div class="d-grid gap-2 d-md-block">
+                            <a href="{% url 'dashboard:dashboard' %}" class="btn btn-primary btn-lg me-md-2">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Перейти к дэшборду
+                            </a>
+                            <a href="{% url 'analytics:customer_list' %}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-users me-2"></i>
+                                Управление данными
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="d-grid gap-2 d-md-block">
+                            <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-md-2">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Войти
+                            </a>
+                            <a href="{% url 'analytics:signup' %}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>
+                                Регистрация
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if not user.is_authenticated %}
+    <div class="row mt-5">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Возможности платформы
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-check text-success me-2"></i>Аналитика и отчеты</h6>
+                            <ul class="list-unstyled ms-4">
+                                <li>• Интерактивные графики и диаграммы</li>
+                                <li>• Дэшборд с ключевыми показателями</li>
+                                <li>• Фильтрация и детализация данных</li>
+                                <li>• Экспорт отчетов</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-check text-success me-2"></i>Машинное обучение</h6>
+                            <ul class="list-unstyled ms-4">
+                                <li>• Обучение моделей ML</li>
+                                <li>• Предиктивная аналитика</li>
+                                <li>• Классификация и кластеризация</li>
+                                <li>• Прогнозирование продаж</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-check text-success me-2"></i>Управление данными</h6>
+                            <ul class="list-unstyled ms-4">
+                                <li>• CRUD операции для всех сущностей</li>
+                                <li>• Загрузка файлов (CSV, Excel, JSON)</li>
+                                <li>• Поиск и фильтрация</li>
+                                <li>• Управление пользователями</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-check text-success me-2"></i>Безопасность</h6>
+                            <ul class="list-unstyled ms-4">
+                                <li>• Система авторизации</li>
+                                <li>• Разные уровни доступа</li>
+                                <li>• Защита данных</li>
+                                <li>• Аудит действий</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

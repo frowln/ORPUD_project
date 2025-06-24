@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Прогнозирование {{ model.name }} - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-chart-line me-2"></i>
+        Прогнозирование: {{ model.name }}
+    </h1>
+    <a href="{% url 'ml_models:model_detail' model.pk %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        Назад к модели
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-input me-2"></i>
+                    Ввод данных для прогноза
+                </h6>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        {% for field in form %}
+                            {% if field.name != 'csrfmiddlewaretoken' %}
+                                <div class="col-md-6">
+                                    {{ field|as_crispy_field }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Информация:</strong> Введите значения для всех необходимых признаков модели.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'ml_models:model_detail' model.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Получить прогноз
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if show_prediction and prediction %}
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Результат прогноза
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-12">
+                        <h4 class="text-primary">{{ prediction }}</h4>
+                        <p class="text-muted mb-0">
+                            {% if model.model_type == 'regression' %}
+                                Прогнозируемая сумма заказа
+                            {% elif model.model_type == 'classification' %}
+                                Прогнозируемый класс клиента
+                            {% elif model.model_type == 'clustering' %}
+                                Прогнозируемый кластер продукта
+                            {% elif model.model_type == 'forecasting' %}
+                                Прогнозируемые продажи
+                            {% else %}
+                                Результат прогноза
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Точность модели:</h6>
+                        <span class="badge bg-{% if model.accuracy > 0.8 %}success{% elif model.accuracy > 0.6 %}warning{% else %}danger{% endif %}">
+                            {{ accuracy_percent|floatformat:1 }}%
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Тип модели:</h6>
+                        <span class="badge bg-info fs-6">{{ model.get_model_type_display }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Информация о модели -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Информация о модели
+                </h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td class="fw-bold">Тип:</td>
+                        <td>{{ model.get_model_type_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Алгоритм:</td>
+                        <td>{{ model.get_algorithm_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Точность:</td>
+                        <td>
+                            <span class="badge bg-{% if model.accuracy > 0.8 %}success{% elif model.accuracy > 0.6 %}warning{% else %}danger{% endif %}">
+                                {{ accuracy_percent|floatformat:1 }}%
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Статус:</td>
+                        <td>
+                            {% if model.accuracy and model.accuracy > 0 %}
+                                <span class="badge bg-success">Обучена</span>
+                            {% else %}
+                                <span class="badge bg-warning">Не обучена</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="fw-bold">Создана:</td>
+                        <td>{{ model.created_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Примеры данных -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-warning">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    Примеры входных данных
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if model.model_type == 'regression' %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Признак</th>
+                                    <th>Пример</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Возраст клиента</td><td>30 лет</td></tr>
+                                <tr><td>Месяц заказа</td><td>6 (июнь)</td></tr>
+                                <tr><td>День заказа</td><td>15</td></tr>
+                                <tr><td>День недели</td><td>2 (вторник)</td></tr>
+                                <tr><td>Количество товаров</td><td>2</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif model.model_type == 'classification' %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Признак</th>
+                                    <th>Пример</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Общее количество заказов</td><td>5</td></tr>
+                                <tr><td>Общая сумма покупок</td><td>1500 руб</td></tr>
+                                <tr><td>Дней с регистрации</td><td>365</td></tr>
+                                <tr><td>Активный клиент</td><td>Да</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif model.model_type == 'clustering' %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Признак</th>
+                                    <th>Пример</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Цена продукта</td><td>1000 руб</td></tr>
+                                <tr><td>Себестоимость</td><td>600 руб</td></tr>
+                                <tr><td>Количество на складе</td><td>50</td></tr>
+                                <tr><td>Общие продажи</td><td>50000 руб</td></tr>
+                                <tr><td>Общее количество проданных</td><td>100</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% elif model.model_type == 'forecasting' %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Признак</th>
+                                    <th>Пример</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>День недели</td><td>2 (вторник)</td></tr>
+                                <tr><td>День месяца</td><td>15</td></tr>
+                                <tr><td>Месяц</td><td>6 (июнь)</td></tr>
+                                <tr><td>Продажи вчера</td><td>10000 руб</td></tr>
+                                <tr><td>Продажи позавчера</td><td>9500 руб</td></tr>
+                                <tr><td>Продажи 3 дня назад</td><td>11000 руб</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Примеры данных недоступны</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- История прогнозов -->
+<div class="card shadow mt-4">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-history me-2"></i>
+            История прогнозов
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if prediction_history %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Дата</th>
+                            <th>Входные данные</th>
+                            <th>Результат</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in prediction_history %}
+                        <tr>
+                            <td>{{ p.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                <small class="text-muted">
+                                    {% for key, value in p.input_data.items %}
+                                        {{ key }}: {{ value }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </small>
+                            </td>
+                            <td>{{ p.prediction }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">История прогнозов пуста</h5>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

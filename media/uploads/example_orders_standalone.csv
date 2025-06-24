@@ -1,0 +1,6 @@
+customer_email,customer_name,phone,total_amount,status,product_name,product_sku,price,cost,category,quantity,shipping_address
+ivan.petrov@example.com,Иван Петров,+7-900-123-45-67,89999.00,delivered,Ноутбук Dell XPS 13,SKU-LAPTOP-001,89999.00,65000.00,Электроника,1,"ул. Ленина, д. 1, кв. 5"
+maria.sidorova@example.com,Мария Сидорова,+7-900-234-56-78,79999.00,delivered,Смартфон iPhone 15,SKU-PHONE-001,79999.00,55000.00,Электроника,1,"пр. Невский, д. 10, кв. 15"
+alexey.kozlov@example.com,Алексей Козлов,+7-900-345-67-89,29999.00,delivered,Наушники Sony WH-1000XM4,SKU-HEADPHONES-001,29999.00,20000.00,Электроника,1,"ул. Мира, д. 25, кв. 8"
+elena.morozova@example.com,Елена Морозова,+7-900-456-78-90,1500.00,delivered,Книга "Война и мир",SKU-BOOK-001,1500.00,800.00,Книги,1,"ул. Красная, д. 15, кв. 12"
+dmitry.volkov@example.com,Дмитрий Волков,+7-900-567-89-01,2500.00,delivered,Футболка хлопковая,SKU-CLOTHES-001,2500.00,1200.00,Одежда,1,"ул. Баумана, д. 8, кв. 3"

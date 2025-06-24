@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Отчеты{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-file-alt text-primary me-2"></i>
+            Отчеты
+        </h1>
+        <div>
+            <a href="{% url 'analytics:reports' %}" class="btn btn-primary">
+                <i class="fas fa-chart-bar me-2"></i>
+                Детальная аналитика
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Общая статистика</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-primary">{{ total_revenue|floatformat:0 }} ₽</h4>
+                                <p class="text-muted">Общая выручка</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-success">{{ total_orders }}</h4>
+                                <p class="text-muted">Всего заказов</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-info">{{ active_customers }}</h4>
+                                <p class="text-muted">Активных клиентов</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h4 class="text-warning">{{ avg_order_value|floatformat:0 }} ₽</h4>
+                                <p class="text-muted">Средний чек</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Быстрые действия</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'analytics:customer_list' %}" class="btn btn-outline-primary btn-block">
+                                <i class="fas fa-users me-2"></i>
+                                Клиенты
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'analytics:product_list' %}" class="btn btn-outline-success btn-block">
+                                <i class="fas fa-box me-2"></i>
+                                Продукты
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'analytics:order_list' %}" class="btn btn-outline-info btn-block">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Заказы
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'analytics:data_upload' %}" class="btn btn-outline-warning btn-block">
+                                <i class="fas fa-upload me-2"></i>
+                                Загрузка данных
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Последние действия</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Новый заказ</h6>
+                                <small class="text-muted">Заказ #1234 создан</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">2 мин назад</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Регистрация клиента</h6>
+                                <small class="text-muted">Новый клиент зарегистрирован</small>
+                            </div>
+                            <span class="badge bg-success rounded-pill">15 мин назад</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Загрузка данных</h6>
+                                <small class="text-muted">Файл данных обработан</small>
+                            </div>
+                            <span class="badge bg-info rounded-pill">1 час назад</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

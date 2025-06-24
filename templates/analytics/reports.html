@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+
+{% block title %}Отчеты и аналитика - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-chart-bar me-2"></i>
+        Отчеты и аналитика
+    </h1>
+    <div>
+        <div class="btn-group me-2" role="group">
+            <a href="{% url 'analytics:export_report' %}?type=sales" class="btn btn-success">
+                <i class="fas fa-download me-2"></i>
+                Экспорт продаж
+            </a>
+            <a href="{% url 'analytics:export_report' %}?type=products" class="btn btn-info">
+                <i class="fas fa-download me-2"></i>
+                Экспорт продуктов
+            </a>
+        </div>
+        <a href="{% url 'analytics:generate_report' %}" class="btn btn-primary me-2">
+            <i class="fas fa-plus me-2"></i>
+            Создать отчет
+        </a>
+        <a href="{% url 'analytics:report_list' %}" class="btn btn-secondary">
+            <i class="fas fa-list me-2"></i>
+            Список отчетов
+        </a>
+    </div>
+</div>
+
+<!-- Статистика -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Общая выручка
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_revenue|floatformat:0 }} ₽</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-ruble-sign fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Количество заказов
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Активных клиентов
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_customers }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Средний чек
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ avg_order_value|floatformat:0 }} ₽</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Графики -->
+<div class="row">
+    <!-- График продаж по месяцам -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-area me-2"></i>
+                    Продажи по месяцам
+                </h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in">
+                        <a class="dropdown-item" href="#">Экспорт</a>
+                        <a class="dropdown-item" href="#">Настройки</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="salesChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Круговая диаграмма по категориям -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Продажи по категориям
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="categoryChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Таблицы с данными -->
+<div class="row">
+    <!-- Топ продуктов -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-star me-2"></i>
+                    Топ-10 продуктов по продажам
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if top_products %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Продукт</th>
+                                    <th>Категория</th>
+                                    <th>Продажи</th>
+                                    <th>Выручка</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in top_products %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'analytics:product_detail' product.pk %}" class="text-decoration-none">
+                                            {{ product.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ product.category.name }}</td>
+                                    <td>{{ product.total_sales }} шт.</td>
+                                    <td>{{ product.total_revenue }} ₽</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Данные отсутствуют</h5>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Топ клиентов -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-crown me-2"></i>
+                    Топ-10 клиентов по покупкам
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if top_customers %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Клиент</th>
+                                    <th>Регион</th>
+                                    <th>Заказов</th>
+                                    <th>Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in top_customers %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'analytics:customer_detail' customer.pk %}" class="text-decoration-none">
+                                            {{ customer.full_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ customer.region.name|default:"-" }}</td>
+                                    <td>{{ customer.total_orders }}</td>
+                                    <td>{{ customer.total_spent }} ₽</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Данные отсутствуют</h5>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Фильтры для отчетов -->
+<div class="card shadow">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-filter me-2"></i>
+            Фильтры отчетов
+        </h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="date_from" class="form-label">Дата с</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" 
+                       value="{{ request.GET.date_from }}">
+            </div>
+            <div class="col-md-3">
+                <label for="date_to" class="form-label">Дата по</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" 
+                       value="{{ request.GET.date_to }}">
+            </div>
+            <div class="col-md-3">
+                <label for="category" class="form-label">Категория</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">Все категории</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-2"></i>
+                    Применить
+                </button>
+                <a href="{% url 'analytics:reports' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript для графиков -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+    // Получаем данные из Django контекста
+    const salesMonths = JSON.parse('{{ sales_months|escapejs }}');
+    const salesValues = JSON.parse('{{ sales_values|escapejs }}');
+    const categoryLabels = JSON.parse('{{ category_labels|escapejs }}');
+    const categoryValues = JSON.parse('{{ category_values|escapejs }}');
+    
+    // Отладочная информация
+    console.log('Данные для графика продаж:', salesMonths, salesValues);
+    console.log('Данные для графика категорий:', categoryLabels, categoryValues);
+    
+    // График продаж по месяцам
+    if (salesMonths && salesMonths.length > 0) {
+        const salesData = {
+            x: salesMonths,
+            y: salesValues,
+            type: 'bar',
+            name: 'Продажи',
+            marker: {color: '#4e73df'}
+        };
+
+        const salesLayout = {
+            title: 'Продажи по месяцам',
+            xaxis: {title: 'Месяц'},
+            yaxis: {title: 'Выручка (₽)'},
+            height: 300
+        };
+
+        Plotly.newPlot('salesChart', [salesData], salesLayout);
+    } else {
+        document.getElementById('salesChart').innerHTML = '<p class="text-muted text-center">Нет данных для отображения</p>';
+    }
+
+    // График по категориям
+    if (categoryValues && categoryValues.length > 0) {
+        const categoryData = [{
+            values: categoryValues,
+            labels: categoryLabels,
+            type: 'pie',
+            name: 'Продажи по категориям'
+        }];
+
+        const categoryLayout = {
+            title: 'Продажи по категориям',
+            height: 300
+        };
+
+        Plotly.newPlot('categoryChart', categoryData, categoryLayout);
+    } else {
+        document.getElementById('categoryChart').innerHTML = '<p class="text-muted text-center">Нет данных для отображения</p>';
+    }
+</script>
+{% endblock %} 

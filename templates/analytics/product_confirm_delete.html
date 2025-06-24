@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление продукта - Аналитическая платформа{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Подтверждение удаления
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-box fa-3x text-danger mb-3"></i>
+                        <h5>Вы уверены, что хотите удалить продукт?</h5>
+                        <p class="text-muted">
+                            <strong>{{ product.name }}</strong><br>
+                            SKU: {{ product.sku }}<br>
+                            Категория: {{ product.category.name }}
+                        </p>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Внимание!</strong> Это действие нельзя отменить. 
+                        Все данные продукта будут удалены безвозвратно.
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'analytics:product_detail' product.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>
+                                Отмена
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>
+                                Удалить продукт
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

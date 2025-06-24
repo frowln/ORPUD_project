@@ -1,0 +1,6 @@
+customer_email,customer_name,total_amount,status,product_sku,quantity,shipping_address
+ivan.petrov@example.com,Иван Петров,89999.00,delivered,SKU-LAPTOP-001,1,"ул. Ленина, д. 1, кв. 5"
+maria.sidorova@example.com,Мария Сидорова,79999.00,delivered,SKU-PHONE-001,1,"пр. Невский, д. 10, кв. 15"
+alexey.kozlov@example.com,Алексей Козлов,29999.00,delivered,SKU-HEADPHONES-001,1,"ул. Мира, д. 25, кв. 8"
+elena.morozova@example.com,Елена Морозова,1500.00,delivered,SKU-BOOK-001,1,"ул. Красная, д. 15, кв. 12"
+dmitry.volkov@example.com,Дмитрий Волков,2500.00,delivered,SKU-CLOTHES-001,1,"ул. Баумана, д. 8, кв. 3" 

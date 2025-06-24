@@ -1,0 +1,6 @@
+first_name,last_name,email,phone,gender,region,address
+Иван,Петров,ivan.petrov@example.com,+7-900-123-45-67,M,Москва,"ул. Ленина, д. 1, кв. 5"
+Мария,Сидорова,maria.sidorova@example.com,+7-900-234-56-78,F,Санкт-Петербург,"пр. Невский, д. 10, кв. 15"
+Алексей,Козлов,alexey.kozlov@example.com,+7-900-345-67-89,M,Екатеринбург,"ул. Мира, д. 25, кв. 8"
+Елена,Морозова,elena.morozova@example.com,+7-900-456-78-90,F,Новосибирск,"ул. Красная, д. 15, кв. 12"
+Дмитрий,Волков,dmitry.volkov@example.com,+7-900-567-89-01,M,Казань,"ул. Баумана, д. 8, кв. 3" 

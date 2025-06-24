@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Аналитика{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="fas fa-chart-line text-primary me-2"></i>
+            Аналитика
+        </h1>
+    </div>
+
+    <div class="row">
+        <!-- Статистические карточки -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Общая выручка
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_revenue|floatformat:0 }} ₽
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Заказы
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ total_orders }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Клиенты
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ active_customers }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Средний чек
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ avg_order_value|floatformat:0 }} ₽
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="row">
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Динамика продаж</h6>
+                </div>
+                <div class="card-body">
+                    <div id="salesChart" style="height: 300px;" 
+                         data-sales-months='{{ sales_months }}' 
+                         data-sales-values='{{ sales_values }}'></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">Продажи по категориям</h6>
+                </div>
+                <div class="card-body">
+                    <div id="categoryChart" style="height: 300px;" 
+                         data-category-labels='{{ category_labels }}' 
+                         data-category-values='{{ category_values }}'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Топ продукты и клиенты -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Топ продукты</h6>
+                </div>
+                <div class="card-body">
+                    {% if top_products %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Продукт</th>
+                                        <th>Продажи</th>
+                                        <th>Выручка</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in top_products %}
+                                    <tr>
+                                        <td>{{ product.name }}</td>
+                                        <td>{{ product.orderitem_set.count }}</td>
+                                        <td>{{ product.total_revenue|floatformat:0 }} ₽</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Нет данных</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Топ клиенты</h6>
+                </div>
+                <div class="card-body">
+                    {% if top_customers %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Клиент</th>
+                                        <th>Заказы</th>
+                                        <th>Потрачено</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for customer in top_customers %}
+                                    <tr>
+                                        <td>{{ customer.first_name }} {{ customer.last_name }}</td>
+                                        <td>{{ customer.total_orders }}</td>
+                                        <td>{{ customer.total_spent|floatformat:0 }} ₽</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Нет данных</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+    // Получаем данные из Django контекста
+    const salesMonths = JSON.parse('{{ sales_months|escapejs }}');
+    const salesValues = JSON.parse('{{ sales_values|escapejs }}');
+    const categoryLabels = JSON.parse('{{ category_labels|escapejs }}');
+    const categoryValues = JSON.parse('{{ category_values|escapejs }}');
+    
+    // Отладочная информация
+    console.log('Данные для графика продаж:', salesMonths, salesValues);
+    console.log('Данные для графика категорий:', categoryLabels, categoryValues);
+    
+    // График продаж
+    if (salesMonths && salesMonths.length > 0) {
+        const salesData = {
+            x: salesMonths,
+            y: salesValues,
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Продажи',
+            line: {color: '#4e73df'}
+        };
+
+        const salesLayout = {
+            title: 'Динамика продаж по дням',
+            xaxis: {title: 'Дата'},
+            yaxis: {title: 'Выручка (₽)'},
+            height: 300
+        };
+
+        Plotly.newPlot('salesChart', [salesData], salesLayout);
+    } else {
+        document.getElementById('salesChart').innerHTML = '<p class="text-muted text-center">Нет данных для отображения</p>';
+    }
+
+    // График по категориям
+    if (categoryValues && categoryValues.length > 0) {
+        const categoryData = [{
+            values: categoryValues,
+            labels: categoryLabels,
+            type: 'pie',
+            name: 'Продажи по категориям'
+        }];
+
+        const categoryLayout = {
+            title: 'Продажи по категориям',
+            height: 300
+        };
+
+        Plotly.newPlot('categoryChart', categoryData, categoryLayout);
+    } else {
+        document.getElementById('categoryChart').innerHTML = '<p class="text-muted text-center">Нет данных для отображения</p>';
+    }
+</script>
+{% endblock %} 
