@@ -240,9 +240,14 @@
                                 {{ user.get_full_name|default:user.username }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Выйти
-                                </a></li>
+                                <li>
+                                    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Выйти
+                                        </button>
+                                    </form>
+                                </li>
                             </ul>
                         </div>
                     {% else %}
